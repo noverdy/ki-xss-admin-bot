@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 import time
 from urllib.parse import urlparse
 
@@ -9,20 +10,26 @@ load_dotenv()
 
 
 def login(webdriver, url):
-    uri = urlparse(url)
-    webdriver.get(f'{uri.scheme}://{uri.netloc}/login')
+    try:
+        uri = urlparse(url)
+        webdriver.get(f'{uri.scheme}://{uri.netloc}/login')
 
-    webdriver.find_element('id', 'nim').send_keys(
-        os.environ['ADMIN_USERNAME'])
-    webdriver.find_element('id', 'password').send_keys(
-        os.environ['ADMIN_PASSWORD'])
+        webdriver.find_element('id', 'nim').send_keys(
+            os.environ['ADMIN_USERNAME'])
+        webdriver.find_element('id', 'password').send_keys(
+            os.environ['ADMIN_PASSWORD'])
 
-    webdriver.find_element('id', 'submit').click()
+        webdriver.find_element('id', 'submit').click()
+    except Exception:
+        return False
+    else:
+        return True
 
 
 def open_post(webdriver, url):
     try:
         webdriver.get(url)
+        time.sleep(10)
     except Exception:
         return False
     return True
@@ -32,12 +39,16 @@ def report_post(url) -> bool:
     if url == '':
         return False
 
-    driver = webdriver.Chrome()
+    options = Options()
+    options.headless = True
 
-    login(webdriver=driver, url=url)
+    driver = webdriver.Chrome(options=options)
+
+    status = login(webdriver=driver, url=url)
+    if not status:
+        return status
 
     status = open_post(webdriver=driver, url=url)
-    time.sleep(10)
     driver.close()
 
     return status

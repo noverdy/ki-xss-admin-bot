@@ -22,4 +22,5 @@ def report():
         return render_template('failure.html')
 
 
-app.run()
+if __name__ == '__main__':
+    app.run()
